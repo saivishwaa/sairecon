@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sairecon"
+version = "1.0.0"
+description = "SaiRecon — a single CLI that aggregates best-in-class open-source recon tools into one authorised reconnaissance pipeline."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Sai Vishwaa", email = "saivishwaaincloud@gmail.com" }]
+keywords = ["recon", "reconnaissance", "bug-bounty", "osint", "subdomain-enumeration", "cli"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "Topic :: Internet",
+]
+dependencies = [
+    "requests>=2.31",
+    "dnspython>=2.4",
+    "python-whois>=0.9.4",
+    "rich>=13.7",
+    "jinja2>=3.1",
+    "mmh3>=4.1",
+]
+
+[project.urls]
+"Homepage"    = "https://github.com/saivishwaa/sairecon"
+"Bug Tracker" = "https://github.com/saivishwaa/sairecon/issues"
+"Source"      = "https://github.com/saivishwaa/sairecon"
+
+[project.scripts]
+sairecon = "sairecon.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sairecon*"]
+
+[tool.setuptools.package-data]
+"sairecon.report" = ["templates/*.j2"]
+"sairecon.data"   = ["wordlists/*.txt"]

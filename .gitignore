@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# SaiRecon runtime output (never commit scan results)
+.env
+sairecon_output/
+screenshots/
+
+# Report files generated at runtime
+*.html
+*.json
+*.md
+!README.md
+!CHANGELOG.md
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/

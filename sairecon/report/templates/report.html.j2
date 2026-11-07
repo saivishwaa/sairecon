@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SaiRecon Report — {{ scan.apex_domain }}</title>
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
+    --critical:#f85149; --high:#ff9f45; --medium:#d4a72c; --low:#58a6ff; --info:#3fb950; --none:#8b949e;
+    --accent:#58a6ff;
+  }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:0 0 60px;}
+  header{padding:32px 40px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#161b22,#0d1117);}
+  header h1{margin:0 0 6px;font-size:26px;}
+  header .meta{color:var(--muted);font-size:14px;}
+  .container{max-width:1100px;margin:0 auto;padding:0 24px;}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:28px 0;}
+  .summary-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+  .summary-card .num{font-size:28px;font-weight:700;}
+  .summary-card .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;}
+  .sev-critical{color:var(--critical);} .sev-high{color:var(--high);}
+  .sev-medium{color:var(--medium);} .sev-low{color:var(--low);} .sev-info{color:var(--info);}
+  .scope-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:24px;font-size:14px;color:var(--muted);}
+  .scope-box code{color:var(--text);background:#0d1117;padding:1px 6px;border-radius:4px;}
+  h2.section-title{border-bottom:1px solid var(--border);padding-bottom:8px;margin-top:40px;font-size:18px;}
+  .finding{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--none);border-radius:8px;margin-bottom:14px;overflow:hidden;}
+  .finding.sev-critical{border-left-color:var(--critical);}
+  .finding.sev-high{border-left-color:var(--high);}
+  .finding.sev-medium{border-left-color:var(--medium);}
+  .finding.sev-low{border-left-color:var(--low);}
+  .finding.sev-info{border-left-color:var(--info);}
+  .finding-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;}
+  .finding-head .title{font-weight:600;font-size:14.5px;}
+  .finding-head .module{color:var(--muted);font-size:12px;margin-top:2px;}
+  .badge{font-size:11px;font-weight:700;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;margin-left:12px;}
+  .finding-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border);}
+  .finding-body.open{display:block;}
+  .finding-body .cmd{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#79c0ff;margin:12px 0;white-space:pre-wrap;word-break:break-all;}
+  .finding-body pre.result{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12.5px;overflow-x:auto;max-height:420px;overflow-y:auto;color:#c9d1d9;}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:50px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>SaiRecon Report &mdash; {{ scan.apex_domain }}</h1>
+    <div class="meta">
+      Target: <strong>{{ scan.target_raw }}</strong> &nbsp;&bull;&nbsp;
+      Scope: {{ "Full wildcard recon" if scan.is_wildcard else "Single host" }} &nbsp;&bull;&nbsp;
+      Duration: {{ scan.duration_sec }}s &nbsp;&bull;&nbsp;
+      Generated: {{ scan.finished_at }}
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num sev-critical">{{ severity_counts.critical }}</div><div class="label">Critical</div></div>
+    <div class="summary-card"><div class="num sev-high">{{ severity_counts.high }}</div><div class="label">High</div></div>
+    <div class="summary-card"><div class="num sev-medium">{{ severity_counts.medium }}</div><div class="label">Medium</div></div>
+    <div class="summary-card"><div class="num sev-low">{{ severity_counts.low }}</div><div class="label">Low</div></div>
+    <div class="summary-card"><div class="num sev-info">{{ severity_counts.info }}</div><div class="label">Info</div></div>
+    <div class="summary-card"><div class="num">{{ scan.resolved_hosts|length }}</div><div class="label">Resolved Hosts</div></div>
+    <div class="summary-card"><div class="num">{{ scan.live_hosts|length }}</div><div class="label">Live Hosts</div></div>
+    <div class="summary-card"><div class="num">{{ findings|length }}</div><div class="label">Findings</div></div>
+  </div>
+
+  <div class="scope-box">
+    <strong>Resolved hosts ({{ scan.resolved_hosts|length }}):</strong>
+    {% for h in scan.resolved_hosts[:60] %}<code>{{ h }}</code>{% endfor %}
+    {% if scan.resolved_hosts|length > 60 %}&hellip; and {{ scan.resolved_hosts|length - 60 }} more (see JSON report){% endif %}
+    <br><br>
+    <strong>Modules run:</strong> {{ scan.modules_run|join(", ") }}
+  </div>
+
+  <h2 class="section-title">Findings ({{ findings|length }})</h2>
+  {% for f in findings %}
+  <div class="finding sev-{{ f.severity or 'none' }}">
+    <div class="finding-head" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div>
+        <div class="title">{{ f.title }}</div>
+        <div class="module">{{ f.source_module }}</div>
+      </div>
+      {% if f.severity %}<span class="badge sev-{{ f.severity }}">{{ f.severity }}</span>{% endif %}
+    </div>
+    <div class="finding-body">
+      <div class="cmd">$ {{ f.command }}</div>
+      <pre class="result">{{ f.result | tojson(indent=2) }}</pre>
+    </div>
+  </div>
+  {% endfor %}
+
+  <footer>
+    Generated by <strong>SaiRecon</strong> &mdash;
+    recon-only, no attack code. Authorized reconnaissance only.
+  </footer>
+</div>
+</body>
+</html>

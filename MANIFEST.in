@@ -1,0 +1,9 @@
+include README.md
+include LICENSE
+include requirements.txt
+include .env.example
+include install_tools.sh
+include install_tools_windows.ps1
+recursive-include sairecon/report/templates *.j2
+recursive-include sairecon/data/wordlists *.txt
+recursive-include tests *.py
