@@ -1,5 +1,5 @@
 # =============================================================================
-# SaiRecon — install_tools_windows.ps1
+# SaiRecon -- install_tools_windows.ps1
 # Run in PowerShell as Administrator:
 #   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 #   .\install_tools_windows.ps1
@@ -11,7 +11,7 @@ $VENV_DIR   = "$SCRIPT_DIR\.venv"
 $ENV_FILE   = "$SCRIPT_DIR\.env"
 
 function Info    { param($m) Write-Host "[*] $m" -ForegroundColor Cyan }
-function Success { param($m) Write-Host "[✓] $m" -ForegroundColor Green }
+function Success { param($m) Write-Host "[+] $m" -ForegroundColor Green }
 function Warn    { param($m) Write-Host "[!] $m" -ForegroundColor Yellow }
 
 Write-Host @"
@@ -23,11 +23,11 @@ Write-Host @"
   =====    ==   ==  ====  ==   ==  ======   ====    ======  ==   ==
  =====================================================================
 
- SaiRecon — Windows Installer
+ SaiRecon -- Windows Installer
 "@ -ForegroundColor Cyan
 
 # ---------------------------------------------------------------------------
-# Step 1 — Check prerequisites
+# Step 1 -- Check prerequisites
 # ---------------------------------------------------------------------------
 Info "[1/5] Checking prerequisites"
 
@@ -59,7 +59,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 Success "Git found"
 
 # ---------------------------------------------------------------------------
-# Step 2 — Python venv + pip deps
+# Step 2 -- Python venv + pip deps
 # ---------------------------------------------------------------------------
 Info "[2/5] Python virtualenv + dependencies"
 if (-not (Test-Path $VENV_DIR)) {
@@ -84,7 +84,7 @@ Set-Content -Path $BAT_PATH -Value $batContent -Encoding ASCII
 Success "sairecon.bat wrapper created"
 
 # ---------------------------------------------------------------------------
-# Step 3 — Go tools
+# Step 3 -- Go tools
 # ---------------------------------------------------------------------------
 Info "[3/5] Go-based recon tools"
 $goTools = @(
@@ -125,16 +125,16 @@ foreach ($tool in $goTools) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 4 — Manual downloads (nmap, findomain)
+# Step 4 -- Manual downloads (nmap, findomain)
 # ---------------------------------------------------------------------------
 Info "[4/5] Manual installs check"
 if (-not (Get-Command nmap -ErrorAction SilentlyContinue)) {
-    Warn "nmap not found — download: https://nmap.org/download.html"
+    Warn "nmap not found -- download: https://nmap.org/download.html"
     Start-Process "https://nmap.org/download.html"
 } else { Success "nmap found" }
 
 if (-not (Get-Command findomain -ErrorAction SilentlyContinue)) {
-    Warn "findomain not found — download findomain-windows.exe from:"
+    Warn "findomain not found -- download findomain-windows.exe from:"
     Warn "  https://github.com/Findomain/Findomain/releases"
     Warn "  Rename to findomain.exe and add folder to PATH"
     Start-Process "https://github.com/Findomain/Findomain/releases"
@@ -153,7 +153,7 @@ if (-not (Test-Path $GF_DIR) -or (Get-ChildItem $GF_DIR -Filter "*.json").Count 
 }
 
 # ---------------------------------------------------------------------------
-# Step 5 — API keys
+# Step 5 -- API keys
 # ---------------------------------------------------------------------------
 Info "[5/5] API keys (optional)"
 Write-Host "These unlock extra recon sources. Press ENTER to skip any." -ForegroundColor Yellow
@@ -180,11 +180,11 @@ function Prompt-Key {
 
 if (-not (Test-Path $ENV_FILE)) { New-Item $ENV_FILE -ItemType File | Out-Null }
 Add-Content $ENV_FILE "# SaiRecon API keys"
-Prompt-Key "GITHUB_TOKEN"      "github.com → Settings → Developer → Personal access tokens"
-Prompt-Key "PDCP_API_KEY"      "app.projectdiscovery.io → API keys (free)"
-Prompt-Key "SHODAN_API_KEY"    "account.shodan.io → My Account (free tier)"
-Prompt-Key "CENSYS_API_ID"     "search.censys.io → Account → API"
-Prompt-Key "CENSYS_API_SECRET" "search.censys.io → Account → API"
+Prompt-Key "GITHUB_TOKEN"      "github.com -> Settings -> Developer -> Personal access tokens"
+Prompt-Key "PDCP_API_KEY"      "app.projectdiscovery.io -> API keys (free)"
+Prompt-Key "SHODAN_API_KEY"    "account.shodan.io -> My Account (free tier)"
+Prompt-Key "CENSYS_API_ID"     "search.censys.io -> Account -> API"
+Prompt-Key "CENSYS_API_SECRET" "search.censys.io -> Account -> API"
 
 Write-Host ""
 Write-Host "=== Installation complete ===" -ForegroundColor Green
