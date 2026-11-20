@@ -2,100 +2,556 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SaiRecon Report — {{ scan.apex_domain }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaiRecon Report — {{ scan.apex_domain or scan.target_raw }}</title>
 <style>
   :root {
-    --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
-    --critical:#f85149; --high:#ff9f45; --medium:#d4a72c; --low:#58a6ff; --info:#3fb950; --none:#8b949e;
-    --accent:#58a6ff;
+    --bg: #0b0f14;
+    --surface: #121820;
+    --panel: #182230;
+    --border: #263548;
+    --text: #e6edf3;
+    --muted: #8b9bb0;
+    --critical: #ff4757;
+    --critical-bg: rgba(255, 71, 87, 0.12);
+    --high: #ff9f43;
+    --high-bg: rgba(255, 159, 67, 0.12);
+    --medium: #feca57;
+    --medium-bg: rgba(254, 202, 87, 0.12);
+    --low: #54a0ff;
+    --low-bg: rgba(84, 160, 255, 0.12);
+    --info: #1dd1a1;
+    --info-bg: rgba(29, 209, 161, 0.12);
+    --amber: #ff9f43;
+    --cyan: #48dbfb;
   }
-  *{box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:0 0 60px;}
-  header{padding:32px 40px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,#161b22,#0d1117);}
-  header h1{margin:0 0 6px;font-size:26px;}
-  header .meta{color:var(--muted);font-size:14px;}
-  .container{max-width:1100px;margin:0 auto;padding:0 24px;}
-  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:28px 0;}
-  .summary-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
-  .summary-card .num{font-size:28px;font-weight:700;}
-  .summary-card .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.05em;}
-  .sev-critical{color:var(--critical);} .sev-high{color:var(--high);}
-  .sev-medium{color:var(--medium);} .sev-low{color:var(--low);} .sev-info{color:var(--info);}
-  .scope-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:24px;font-size:14px;color:var(--muted);}
-  .scope-box code{color:var(--text);background:#0d1117;padding:1px 6px;border-radius:4px;}
-  h2.section-title{border-bottom:1px solid var(--border);padding-bottom:8px;margin-top:40px;font-size:18px;}
-  .finding{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--none);border-radius:8px;margin-bottom:14px;overflow:hidden;}
-  .finding.sev-critical{border-left-color:var(--critical);}
-  .finding.sev-high{border-left-color:var(--high);}
-  .finding.sev-medium{border-left-color:var(--medium);}
-  .finding.sev-low{border-left-color:var(--low);}
-  .finding.sev-info{border-left-color:var(--info);}
-  .finding-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;}
-  .finding-head .title{font-weight:600;font-size:14.5px;}
-  .finding-head .module{color:var(--muted);font-size:12px;margin-top:2px;}
-  .badge{font-size:11px;font-weight:700;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap;margin-left:12px;}
-  .finding-body{display:none;padding:0 18px 18px;border-top:1px solid var(--border);}
-  .finding-body.open{display:block;}
-  .finding-body .cmd{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:#79c0ff;margin:12px 0;white-space:pre-wrap;word-break:break-all;}
-  .finding-body pre.result{background:#0d1117;border:1px solid var(--border);border-radius:6px;padding:12px;font-size:12.5px;overflow-x:auto;max-height:420px;overflow-y:auto;color:#c9d1d9;}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:50px;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    padding-bottom: 80px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  header {
+    background: linear-gradient(135deg, #131c28 0%, #0b0f14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 0;
+    margin-bottom: 32px;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .logo {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo span { color: var(--amber); }
+  .badge-tag {
+    background: rgba(255, 159, 67, 0.15);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .meta-bar strong { color: var(--text); }
+
+  /* KPI Grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .kpi-card:hover { transform: translateY(-2px); border-color: var(--amber); }
+  .kpi-num { font-size: 28px; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
+  .kpi-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  .kpi-critical { color: var(--critical); border-top: 3px solid var(--critical); }
+  .kpi-high { color: var(--high); border-top: 3px solid var(--high); }
+  .kpi-medium { color: var(--medium); border-top: 3px solid var(--medium); }
+  .kpi-low { color: var(--low); border-top: 3px solid var(--low); }
+  .kpi-info { color: var(--info); border-top: 3px solid var(--info); }
+  .kpi-neutral { color: var(--text); border-top: 3px solid var(--border); }
+
+  /* Scope & Context Box */
+  .info-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    font-size: 13.5px;
+  }
+  .info-box h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 12px; }
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; max-height: 160px; overflow-y: auto; margin-top: 8px; }
+  .tag { background: var(--panel); border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .filter-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filter-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--amber);
+    color: #0b0f14;
+    border-color: var(--amber);
+  }
+  .search-input {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 220px;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--amber); }
+  .action-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .action-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+  /* Findings List */
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--muted);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+  }
+  .finding.sev-critical { border-left-color: var(--critical); }
+  .finding.sev-high { border-left-color: var(--high); }
+  .finding.sev-medium { border-left-color: var(--medium); }
+  .finding.sev-low { border-left-color: var(--low); }
+  .finding.sev-info { border-left-color: var(--info); }
+  .finding.hidden { display: none !important; }
+
+  .finding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .finding-title-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .finding-title { font-weight: 600; font-size: 14.5px; }
+  .module-tag {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--cyan);
+    font-family: monospace;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge.sev-critical { background: var(--critical-bg); color: var(--critical); border: 1px solid var(--critical); }
+  .badge.sev-high { background: var(--high-bg); color: var(--high); border: 1px solid var(--high); }
+  .badge.sev-medium { background: var(--medium-bg); color: var(--medium); border: 1px solid var(--medium); }
+  .badge.sev-low { background: var(--low-bg); color: var(--low); border: 1px solid var(--low); }
+  .badge.sev-info { background: var(--info-bg); color: var(--info); border: 1px solid var(--info); }
+
+  .finding-body {
+    display: none;
+    padding: 0 18px 18px;
+    border-top: 1px solid var(--border);
+    animation: fadeIn 0.15s ease-in-out;
+  }
+  .finding-body.open { display: block; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .cmd-bar {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--cyan);
+    margin: 14px 0;
+    word-break: break-all;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cmd-bar span { overflow: hidden; text-overflow: ellipsis; }
+
+  /* Structured Custom Tables inside Findings */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 12.5px;
+  }
+  .data-table th, .data-table td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  .data-table th { background: var(--panel); color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; }
+  .data-table tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+
+  pre.json-view {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow-x: auto;
+    max-height: 400px;
+    color: #c9d1d9;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-top: 50px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  footer strong { color: var(--amber); }
+
+  @media (max-width: 768px) {
+    .header-brand { flex-direction: column; align-items: flex-start; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-input { width: 100%; }
+  }
 </style>
 </head>
 <body>
+
 <header>
   <div class="container">
-    <h1>SaiRecon Report &mdash; {{ scan.apex_domain }}</h1>
-    <div class="meta">
-      Target: <strong>{{ scan.target_raw }}</strong> &nbsp;&bull;&nbsp;
-      Scope: {{ "Full wildcard recon" if scan.is_wildcard else "Single host" }} &nbsp;&bull;&nbsp;
-      Duration: {{ scan.duration_sec }}s &nbsp;&bull;&nbsp;
-      Generated: {{ scan.finished_at }}
+    <div class="header-brand">
+      <div class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--amber)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span>SaiRecon</span> Reconnaissance Report
+      </div>
+      <div class="badge-tag">Authorized Recon Pipeline</div>
+    </div>
+    <div class="meta-bar">
+      <div>Target: <strong>{{ scan.target_raw }}</strong></div>
+      <div>Apex: <strong>{{ scan.apex_domain }}</strong></div>
+      <div>Scope: <strong>{{ "Wildcard Domain (*)" if scan.is_wildcard else "Single Host" }}</strong></div>
+      <div>Duration: <strong>{{ scan.duration_sec }}s</strong></div>
+      <div>Generated: <strong>{{ scan.finished_at }}</strong></div>
+      <div>Version: <strong>v{{ scan.sairecon_version }}</strong></div>
     </div>
   </div>
 </header>
 
 <div class="container">
-  <div class="summary-grid">
-    <div class="summary-card"><div class="num sev-critical">{{ severity_counts.critical }}</div><div class="label">Critical</div></div>
-    <div class="summary-card"><div class="num sev-high">{{ severity_counts.high }}</div><div class="label">High</div></div>
-    <div class="summary-card"><div class="num sev-medium">{{ severity_counts.medium }}</div><div class="label">Medium</div></div>
-    <div class="summary-card"><div class="num sev-low">{{ severity_counts.low }}</div><div class="label">Low</div></div>
-    <div class="summary-card"><div class="num sev-info">{{ severity_counts.info }}</div><div class="label">Info</div></div>
-    <div class="summary-card"><div class="num">{{ scan.resolved_hosts|length }}</div><div class="label">Resolved Hosts</div></div>
-    <div class="summary-card"><div class="num">{{ scan.live_hosts|length }}</div><div class="label">Live Hosts</div></div>
-    <div class="summary-card"><div class="num">{{ findings|length }}</div><div class="label">Findings</div></div>
+
+  <!-- KPI Metrics -->
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-critical" onclick="filterSeverity('critical')">
+      <div class="kpi-num">{{ severity_counts.critical }}</div>
+      <div class="kpi-label">Critical</div>
+    </div>
+    <div class="kpi-card kpi-high" onclick="filterSeverity('high')">
+      <div class="kpi-num">{{ severity_counts.high }}</div>
+      <div class="kpi-label">High</div>
+    </div>
+    <div class="kpi-card kpi-medium" onclick="filterSeverity('medium')">
+      <div class="kpi-num">{{ severity_counts.medium }}</div>
+      <div class="kpi-label">Medium</div>
+    </div>
+    <div class="kpi-card kpi-low" onclick="filterSeverity('low')">
+      <div class="kpi-num">{{ severity_counts.low }}</div>
+      <div class="kpi-label">Low</div>
+    </div>
+    <div class="kpi-card kpi-info" onclick="filterSeverity('info')">
+      <div class="kpi-num">{{ severity_counts.info }}</div>
+      <div class="kpi-label">Info</div>
+    </div>
+    <div class="kpi-card kpi-neutral" onclick="filterSeverity('all')">
+      <div class="kpi-num">{{ (scan.resolved_hosts or [])|length }}</div>
+      <div class="kpi-label">Resolved Hosts</div>
+    </div>
+    <div class="kpi-card kpi-neutral" onclick="filterSeverity('all')">
+      <div class="kpi-num">{{ (scan.live_hosts or [])|length }}</div>
+      <div class="kpi-label">Live Hosts</div>
+    </div>
+    <div class="kpi-card kpi-neutral" onclick="filterSeverity('all')">
+      <div class="kpi-num">{{ (findings or [])|length }}</div>
+      <div class="kpi-label">Total Findings</div>
+    </div>
   </div>
 
-  <div class="scope-box">
-    <strong>Resolved hosts ({{ scan.resolved_hosts|length }}):</strong>
-    {% for h in scan.resolved_hosts[:60] %}<code>{{ h }}</code>{% endfor %}
-    {% if scan.resolved_hosts|length > 60 %}&hellip; and {{ scan.resolved_hosts|length - 60 }} more (see JSON report){% endif %}
-    <br><br>
-    <strong>Modules run:</strong> {{ scan.modules_run|join(", ") }}
-  </div>
-
-  <h2 class="section-title">Findings ({{ findings|length }})</h2>
-  {% for f in findings %}
-  <div class="finding sev-{{ f.severity or 'none' }}">
-    <div class="finding-head" onclick="this.nextElementSibling.classList.toggle('open')">
-      <div>
-        <div class="title">{{ f.title }}</div>
-        <div class="module">{{ f.source_module }}</div>
+  <!-- Scope & Hosts Summary -->
+  <div class="info-box">
+    <h3>Scope Discovery Overview</h3>
+    <div style="margin-bottom: 8px;">
+      <strong>Resolved Hostnames ({{ (scan.resolved_hosts or [])|length }}):</strong>
+      <div class="tag-cloud">
+        {% for h in (scan.resolved_hosts or [])[:80] %}
+          <span class="tag">{{ h }}</span>
+        {% endfor %}
+        {% if (scan.resolved_hosts or [])|length > 80 %}
+          <span class="tag" style="color:var(--amber);">+ {{ (scan.resolved_hosts|length) - 80 }} more</span>
+        {% endif %}
+        {% if not scan.resolved_hosts %}
+          <span style="color:var(--muted)">No resolved subdomains identified</span>
+        {% endif %}
       </div>
-      {% if f.severity %}<span class="badge sev-{{ f.severity }}">{{ f.severity }}</span>{% endif %}
     </div>
-    <div class="finding-body">
-      <div class="cmd">$ {{ f.command }}</div>
-      <pre class="result">{{ f.result | tojson(indent=2) }}</pre>
+    <div style="margin-top: 14px;">
+      <strong>Modules Executed ({{ (scan.modules_run or [])|length }}):</strong>
+      <div style="color:var(--muted); margin-top:4px;">
+        {{ (scan.modules_run or [])|join(" • ") }}
+      </div>
     </div>
   </div>
-  {% endfor %}
+
+  <!-- Interactive Toolbar -->
+  <div class="toolbar">
+    <div class="filter-group">
+      <span style="font-size:12px; color:var(--muted); margin-right:4px;">Filter:</span>
+      <button class="filter-btn active" onclick="filterSeverity('all', this)">All ({{ (findings or [])|length }})</button>
+      <button class="filter-btn" onclick="filterSeverity('critical', this)">Critical ({{ severity_counts.critical }})</button>
+      <button class="filter-btn" onclick="filterSeverity('high', this)">High ({{ severity_counts.high }})</button>
+      <button class="filter-btn" onclick="filterSeverity('medium', this)">Medium ({{ severity_counts.medium }})</button>
+      <button class="filter-btn" onclick="filterSeverity('low', this)">Low ({{ severity_counts.low }})</button>
+      <button class="filter-btn" onclick="filterSeverity('info', this)">Info ({{ severity_counts.info }})</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search findings..." onkeyup="filterSearch()">
+      <button class="action-btn" onclick="toggleAll()">Expand / Collapse All</button>
+    </div>
+  </div>
+
+  <!-- Findings List -->
+  <div id="findingsContainer">
+    {% for f in findings %}
+    <div class="finding sev-{{ f.severity or 'none' }}" data-severity="{{ f.severity or 'info' }}" data-title="{{ f.title|lower }}" data-module="{{ f.source_module|lower }}">
+      <div class="finding-header" onclick="toggleFinding(this)">
+        <div class="finding-title-group">
+          {% if f.severity %}
+            <span class="badge sev-{{ f.severity }}">{{ f.severity }}</span>
+          {% else %}
+            <span class="badge" style="background:var(--panel); color:var(--muted); border:1px solid var(--border);">INFO</span>
+          {% endif %}
+          <div class="finding-title">{{ f.title }}</div>
+          <span class="module-tag">{{ f.source_module }}</span>
+        </div>
+        <div style="color:var(--muted); font-size:12px;">▼</div>
+      </div>
+      <div class="finding-body {{ 'open' if f.severity in ('critical', 'high') else '' }}">
+        <div class="cmd-bar">
+          <span>$ {{ f.command }}</span>
+        </div>
+
+        <!-- Custom Table for NVD / CVSS Correlation Findings -->
+        {% if f.source_module == 'nvd_correlate' and f.result.get('correlated_vulnerabilities') %}
+        <div style="margin: 14px 0;">
+          <h4 style="font-size:13px; color:var(--amber); margin-bottom:8px;">Correlated CVEs & CVSS Scores</h4>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>CVE ID</th>
+                <th>Component</th>
+                <th>CVSS v3.1</th>
+                <th>Severity</th>
+                <th>Vulnerability Title & Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cve in f.result.get('correlated_vulnerabilities', []) %}
+              <tr>
+                <td><strong>{{ cve.cve }}</strong></td>
+                <td><code>{{ cve.component }}</code></td>
+                <td><span style="font-weight:700; color:var(--critical);">{{ cve.cvss }}</span></td>
+                <td><span class="badge sev-{{ cve.severity }}">{{ cve.severity }}</span></td>
+                <td>
+                  <strong>{{ cve.title }}</strong><br>
+                  <span style="color:var(--muted); font-size:11.5px;">{{ cve.description }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- Custom Table for WebSocket Recon Findings -->
+        {% if f.source_module == 'websocket_recon' and f.result.get('endpoints_by_host') %}
+        <div style="margin: 14px 0;">
+          <h4 style="font-size:13px; color:var(--cyan); margin-bottom:8px;">Discovered WebSocket Services (RFC 6455)</h4>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Host</th>
+                <th>WebSocket URL</th>
+                <th>Scheme</th>
+                <th>Handshake</th>
+                <th>CSWSH Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for host, eps in f.result.get('endpoints_by_host', {}).items() %}
+                {% for ep in eps %}
+                <tr>
+                  <td><strong>{{ host }}</strong></td>
+                  <td><code>{{ ep.ws_url }}</code></td>
+                  <td><span class="tag">{{ ep.scheme|upper }}</span></td>
+                  <td><span style="color:var(--info);">HTTP {{ ep.status_code }} Switching Protocols</span></td>
+                  <td>
+                    {% if ep.cswsh_risk %}
+                      <span class="badge sev-high">CSWSH Vulnerable</span>
+                    {% else %}
+                      <span class="badge sev-info">Validated</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+
+        <!-- Raw JSON Data Container -->
+        <div style="margin-top:10px;">
+          <pre class="json-view">{{ f.result | safe_json }}</pre>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if not findings %}
+      <div style="text-align:center; padding:40px; color:var(--muted); background:var(--surface); border-radius:8px;">
+        No findings recorded for this scan target.
+      </div>
+    {% endif %}
+  </div>
 
   <footer>
     Generated by <strong>SaiRecon</strong> &mdash;
-    recon-only, no attack code. Authorized reconnaissance only.
+    One CLI. Authorized reconnaissance pipeline. No attack code.
   </footer>
 </div>
+
+<script>
+  function toggleFinding(header) {
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+  }
+
+  let allExpanded = false;
+  function toggleAll() {
+    allExpanded = !allExpanded;
+    document.querySelectorAll('.finding-body').forEach(b => {
+      if (allExpanded) {
+        b.classList.add('open');
+      } else {
+        b.classList.remove('open');
+      }
+    });
+  }
+
+  let currentSeverity = 'all';
+  function filterSeverity(sev, btnElement) {
+    currentSeverity = sev;
+    if (btnElement) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+    }
+    applyFilters();
+  }
+
+  function filterSearch() {
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    const findings = document.querySelectorAll('.finding');
+
+    findings.forEach(f => {
+      const fSev = f.getAttribute('data-severity');
+      const fTitle = f.getAttribute('data-title');
+      const fModule = f.getAttribute('data-module');
+
+      const matchesSev = (currentSeverity === 'all') || (fSev === currentSeverity);
+      const matchesSearch = !query || fTitle.includes(query) || fModule.includes(query) || f.innerText.toLowerCase().includes(query);
+
+      if (matchesSev && matchesSearch) {
+        f.classList.remove('hidden');
+      } else {
+        f.classList.add('hidden');
+      }
+    });
+  }
+</script>
 </body>
 </html>

@@ -279,7 +279,7 @@ def main() -> None:
     p_scan.add_argument("target",
                         help="Target: *.example.com  or  example.com  or  sub.example.com")
     p_scan.add_argument("--modules",
-                        help="Comma-separated modules to run (default: all 21).")
+                        help=f"Comma-separated modules to run (default: all {len(MODULE_ORDER)}).")
     p_scan.add_argument("--skip-modules",
                         help="Comma-separated modules to skip.")
     p_scan.add_argument("--format",

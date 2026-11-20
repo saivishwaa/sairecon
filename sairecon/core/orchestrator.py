@@ -74,6 +74,8 @@ def _lazy_import_modules() -> None:
     from sairecon.modules.sensitive_files_mod import SensitiveFilesModule
     from sairecon.modules.screenshot_mod import ScreenshotModule
     from sairecon.modules.breach_mod import BreachModule
+    from sairecon.modules.websocket_recon_mod import WebSocketReconModule
+    from sairecon.modules.nvd_correlate_mod import NVDCorrelateModule
 
     MODULE_REGISTRY.update({
         "whois_recon":        WhoisModule,
@@ -88,6 +90,7 @@ def _lazy_import_modules() -> None:
         "techstack":          TechStackModule,
         "waf_detect":         WAFDetectModule,
         "security_posture":   SecurityPostureModule,
+        "websocket_recon":    WebSocketReconModule,
         "email_security":     EmailSecurityModule,
         "url_discovery":      URLDiscoveryModule,
         "content_discovery":  ContentDiscoveryModule,
@@ -97,6 +100,7 @@ def _lazy_import_modules() -> None:
         "sensitive_files":    SensitiveFilesModule,
         "screenshot":         ScreenshotModule,
         "breach_check":       BreachModule,
+        "nvd_correlate":      NVDCorrelateModule,
     })
 
 
@@ -155,7 +159,7 @@ class ReconOrchestrator:
                 hosts = resolved_hosts if resolved_hosts else [apex]
             elif mod_name in ("techstack", "security_posture", "url_discovery",
                               "content_discovery", "wayback_robots",
-                              "sensitive_files", "screenshot"):
+                              "sensitive_files", "screenshot", "websocket_recon"):
                 hosts = live_hosts if live_hosts else []
                 if not hosts:
                     self._log(mod_name, "No live hosts — skipping HTTP-dependent module.")
@@ -166,6 +170,7 @@ class ReconOrchestrator:
                 hosts = live_hosts if live_hosts else [apex]
 
             self._log(mod_name, f"Starting ...")
+            shared["all_findings"] = list(all_findings)
 
             # --- instantiate module ---
             try:

@@ -192,6 +192,7 @@ MODULE_ORDER = [
     "techstack",
     "waf_detect",
     "security_posture",
+    "websocket_recon",
     "email_security",
     "url_discovery",
     "content_discovery",
@@ -201,4 +202,5 @@ MODULE_ORDER = [
     "sensitive_files",
     "screenshot",
     "breach_check",
+    "nvd_correlate",
 ]

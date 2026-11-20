@@ -33,7 +33,7 @@ def export_markdown(scan_result: dict, output_path: str) -> Optional[str]:
     """Generate a Markdown report. Returns path on success, None on failure."""
     try:
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-        findings = scan_result.get("findings", [])
+        findings = (scan_result or {}).get("findings") or []
         sev_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4, None: 5}
         findings = sorted(findings, key=lambda f: sev_order.get(f.get("severity"), 5))
 
@@ -43,22 +43,22 @@ def export_markdown(scan_result: dict, output_path: str) -> Optional[str]:
             if s in sev_counts:
                 sev_counts[s] += 1
 
-        modules_status = scan_result.get("modules_status", {})
+        modules_status = (scan_result or {}).get("modules_status") or {}
         ok_count   = sum(1 for s in modules_status.values() if s == "ok")
         fail_count = sum(1 for s in modules_status.values() if s == "failed")
         skip_count = sum(1 for s in modules_status.values() if s == "skipped")
 
         lines = []
-        lines.append(f"# SaiRecon Report — {scan_result.get('target_raw', '')}")
+        lines.append(f"# SaiRecon Report — {(scan_result or {}).get('target_raw', '')}")
         lines.append("")
         lines.append("| Field | Value |")
         lines.append("|---|---|")
-        lines.append(f"| Target | `{scan_result.get('target_raw')}` |")
-        lines.append(f"| Apex domain | `{scan_result.get('apex_domain')}` |")
-        lines.append(f"| Scope | {'Wildcard' if scan_result.get('is_wildcard') else 'Single host'} |")
-        lines.append(f"| Started | {scan_result.get('started_at')} |")
-        lines.append(f"| Duration | {scan_result.get('duration_sec')}s |")
-        lines.append(f"| SaiRecon version | {scan_result.get('sairecon_version', VERSION)} |")
+        lines.append(f"| Target | `{(scan_result or {}).get('target_raw')}` |")
+        lines.append(f"| Apex domain | `{(scan_result or {}).get('apex_domain')}` |")
+        lines.append(f"| Scope | {'Wildcard' if (scan_result or {}).get('is_wildcard') else 'Single host'} |")
+        lines.append(f"| Started | {(scan_result or {}).get('started_at')} |")
+        lines.append(f"| Duration | {(scan_result or {}).get('duration_sec')}s |")
+        lines.append(f"| SaiRecon version | {(scan_result or {}).get('sairecon_version', VERSION)} |")
         lines.append("")
         lines.append("## Summary")
         lines.append("")
@@ -67,8 +67,8 @@ def export_markdown(scan_result: dict, output_path: str) -> Optional[str]:
         for s, c in sev_counts.items():
             lines.append(f"| {s.capitalize()} | {c} |")
         lines.append(f"| **Total findings** | **{len(findings)}** |")
-        lines.append(f"| Resolved hosts | {len(scan_result.get('resolved_hosts', []))} |")
-        lines.append(f"| Live hosts | {len(scan_result.get('live_hosts', []))} |")
+        lines.append(f"| Resolved hosts | {len((scan_result or {}).get('resolved_hosts') or [])} |")
+        lines.append(f"| Live hosts | {len((scan_result or {}).get('live_hosts') or [])} |")
         lines.append(f"| Modules OK | {ok_count} |")
         lines.append(f"| Modules Failed | {fail_count} |")
         lines.append(f"| Modules Skipped | {skip_count} |")

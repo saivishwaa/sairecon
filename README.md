@@ -10,7 +10,7 @@
 =====================================================================
 ```
 
-**One CLI. 21 recon modules. Zero attack code.**
+**One CLI. 23 recon modules. Zero attack code.**
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -20,7 +20,7 @@
 
 ---
 
-SaiRecon aggregates the best open-source recon tools (subfinder, httpx, naabu, katana…) into a single, authorised pipeline. One command → 21 modules → clean JSON + HTML + Markdown reports.
+SaiRecon aggregates the best open-source recon tools (subfinder, httpx, naabu, katana…) into a single, authorised pipeline. One command → 23 modules → clean JSON + HTML + Markdown reports.
 
 ---
 
@@ -29,7 +29,7 @@ SaiRecon aggregates the best open-source recon tools (subfinder, httpx, naabu, k
 1. [Installation](#installation)
 2. [Quick start](#quick-start)
 3. [Usage reference](#usage-reference)
-4. [21 Modules](#21-modules)
+4. [23 Modules](#23-modules)
 5. [Architecture](#architecture)
 6. [Output & reports](#output--reports)
 7. [API keys](#api-keys)
@@ -143,7 +143,7 @@ ARGUMENTS
   target        *.example.com  |  example.com  |  sub.example.com
 
 OPTIONS
-  --modules       Comma-separated modules to run  (default: all 21)
+  --modules       Comma-separated modules to run  (default: all 23)
   --skip-modules  Comma-separated modules to skip
   --format        json | html | markdown | md | all  (default: all)
   -o, --output    Base output directory  (default: ./sairecon_output)
@@ -154,21 +154,22 @@ OPTIONS
 sairecon doctor   Check all external tools and API keys
 ```
 
-### All 21 module keys (for --modules / --skip-modules)
+### All 23 module keys (for --modules / --skip-modules)
 
 ```
 whois_recon         dns_recon           subdomain_enum
 asn_cloud_recon     passive_exposure    live_recon
 subdomain_takeover  port_scan           ssl_cert
 techstack           waf_detect          security_posture
-email_security      url_discovery       content_discovery
-param_discovery     js_secrets          wayback_robots
-sensitive_files     screenshot          breach_check
+websocket_recon     email_security      url_discovery
+content_discovery   param_discovery     js_secrets
+wayback_robots      sensitive_files     screenshot
+breach_check        nvd_correlate
 ```
 
 ---
 
-## 21 Modules
+## 23 Modules
 
 | # | Module key | What it does | Go tools | Python fallback |
 |---|---|---|---|---|
@@ -184,15 +185,17 @@ sensitive_files     screenshot          breach_check
 | 10 | `techstack` | Web framework / CMS fingerprinting | whatweb | header parse ✓ |
 | 11 | `waf_detect` | WAF / CDN identification | wafw00f | header heuristics ✓ |
 | 12 | `security_posture` | Security headers audit (CSP, HSTS…) | — | requests ✓ |
-| 13 | `email_security` | SPF, DMARC, DKIM, MTA-STS | — | dnspython ✓ |
-| 14 | `url_discovery` | Crawl + archive URL collection | katana, gau, waybackurls | archive ✓ |
-| 15 | `content_discovery` | Directory/file brute-force | ffuf | skipped |
-| 16 | `param_discovery` | Query parameter enumeration | arjun | skipped |
-| 17 | `js_secrets` | API keys/tokens in JS files | gf patterns | regex ✓ |
-| 18 | `wayback_robots` | Historical robots.txt from Wayback | — | requests ✓ |
-| 19 | `sensitive_files` | Sensitive path probe (.env, .git…) | — | requests ✓ |
-| 20 | `screenshot` | Full-page screenshots | gowitness | skipped |
-| 21 | `breach_check` | HaveIBeenPwned domain breach lookup | — | requests ✓ |
+| 13 | `websocket_recon` | WebSocket discovery, RFC 6455 handshake verification & CSWSH posture check | — | requests ✓ |
+| 14 | `email_security` | SPF, DMARC, DKIM, MTA-STS | — | dnspython ✓ |
+| 15 | `url_discovery` | Crawl + archive URL collection | katana, gau, waybackurls | archive ✓ |
+| 16 | `content_discovery` | Directory/file brute-force | ffuf | skipped |
+| 17 | `param_discovery` | Query parameter enumeration | arjun | skipped |
+| 18 | `js_secrets` | API keys/tokens in JS files | gf patterns | regex ✓ |
+| 19 | `wayback_robots` | Historical robots.txt from Wayback | — | requests ✓ |
+| 20 | `sensitive_files` | Sensitive path probe (.env, .git…) | — | requests ✓ |
+| 21 | `screenshot` | Full-page screenshots | gowitness | skipped |
+| 22 | `breach_check` | HaveIBeenPwned domain breach lookup | — | requests ✓ |
+| 23 | `nvd_correlate` | NVD / CVSS vulnerability correlation for fingerprinted technologies & services | — | NVD API v2.0 + offline KB ✓ |
 
 ---
 
@@ -227,10 +230,11 @@ sairecon scan *.example.com
   │                           │                                │
   │               live_hosts (from live_recon)                 │
   │                           │                                │
-  │  ┌── HTTP LEVEL ───────────▼────────────────────────────┐  │
-  │  │  techstack, security_posture, url_discovery,         │  │
-  │  │  content_discovery, js_secrets, wayback_robots,      │  │
-  │  │  sensitive_files, screenshot                         │  │
+  │  ┌── HTTP & VULN LEVEL ────▼────────────────────────────┐  │
+  │  │  techstack, security_posture, websocket_recon,       │  │
+  │  │  url_discovery, content_discovery, js_secrets,       │  │
+  │  │  wayback_robots, sensitive_files, screenshot,        │  │
+  │  │  nvd_correlate                                       │  │
   │  └──────────────────────────────────────────────────────┘  │
   │                                                            │
   │  Every module wrapped in try/except — one crash ≠ stop    │
