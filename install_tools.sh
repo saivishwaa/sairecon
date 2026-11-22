@@ -56,7 +56,7 @@ echo
 # ---------------------------------------------------------------------------
 # Step 1 — System packages
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[1/6] System packages${RESET}"
+echo -e "${BOLD}[1/5] System packages${RESET}"
 if [[ "$OS" == "linux" ]]; then
     sudo apt-get update -y -q
     sudo apt-get install -y -q \
@@ -81,7 +81,7 @@ echo
 # ---------------------------------------------------------------------------
 # Step 2 — Go (official tarball, not apt golang-go which gives outdated 1.18)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[2/6] Go ${GOVERSION}${RESET}"
+echo -e "${BOLD}[2/5] Go ${GOVERSION}${RESET}"
 install_go() {
     if [[ "$OS" == "linux" ]]; then
         URL=$( [[ "$ARCH" == "aarch64" ]] && echo "$GO_LINUX_ARM64" || echo "$GO_LINUX_AMD64" )
@@ -123,7 +123,7 @@ echo
 # ---------------------------------------------------------------------------
 # Step 3 — Go tools (ProjectDiscovery + tomnomnom)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[3/6] Go-based recon tools${RESET}"
+echo -e "${BOLD}[3/5] Go-based recon tools${RESET}"
 GO_TOOLS=(
     "github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
     "github.com/projectdiscovery/httpx/cmd/httpx@latest"
@@ -147,6 +147,9 @@ GO_TOOLS=(
 FAILED_GO=()
 for tool in "${GO_TOOLS[@]}"; do
     binary=$(basename "${tool%%@*}")
+    if [[ "$binary" =~ ^v[0-9]+$ ]]; then
+        binary=$(basename "$(dirname "${tool%%@*}")")
+    fi
     if command -v "$binary" &>/dev/null; then
         success "$binary already installed"
     else
@@ -168,7 +171,7 @@ echo
 # ---------------------------------------------------------------------------
 # Step 4 — findomain (prebuilt binary, no Go compile)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[4/6] findomain${RESET}"
+echo -e "${BOLD}[4/5] findomain${RESET}"
 if command -v findomain &>/dev/null; then
     success "findomain already installed"
 else
@@ -193,9 +196,9 @@ fi
 echo
 
 # ---------------------------------------------------------------------------
-# Step 5 — Python virtualenv + pip deps
+# Step 5 — Python dependencies (virtualenv)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[5/6] Python dependencies (virtualenv)${RESET}"
+echo -e "${BOLD}[5/5] Python dependencies (virtualenv)${RESET}"
 if [[ ! -d "$VENV_DIR" ]]; then
     info "Creating virtualenv at $VENV_DIR ..."
     python3 -m venv "$VENV_DIR"
@@ -217,39 +220,8 @@ if [[ ! -d "$GF_PATTERNS_DIR" ]] || [[ -z "$(ls -A "$GF_PATTERNS_DIR" 2>/dev/nul
     rm -rf "$TMP"
     success "gf patterns installed to $GF_PATTERNS_DIR"
 fi
-echo
-
-# ---------------------------------------------------------------------------
-# Step 6 — API keys (interactive + .env file)
-# ---------------------------------------------------------------------------
-echo -e "${BOLD}[6/6] API keys (optional but highly recommended)${RESET}"
-echo "These unlock additional recon sources."
-echo "Press ENTER to skip any key."
-echo
-
-prompt_key() {
-    local var="$1" desc="$2" existing=""
-    existing=$(grep "^${var}=" "$ENV_FILE" 2>/dev/null | cut -d= -f2- || true)
-    if [[ -n "$existing" ]]; then
-        echo -e "  ${GREEN}✓${RESET} $var already in .env (${desc})"
-        return
-    fi
-    read -r -p "  $var ($desc): " val
-    if [[ -n "$val" ]]; then
-        echo "${var}=${val}" >> "$ENV_FILE"
-        echo -e "  ${GREEN}✓${RESET} Saved to .env"
-    else
-        echo -e "  ${YELLOW}–${RESET} Skipped"
-    fi
-}
 
 touch "$ENV_FILE"
-echo "# SaiRecon API keys — auto-loaded on scan" >> "$ENV_FILE"
-prompt_key "GITHUB_TOKEN"    "github.com → Settings → Developer settings → Personal access tokens"
-prompt_key "PDCP_API_KEY"    "app.projectdiscovery.io → API keys  (free tier, for asnmap)"
-prompt_key "SHODAN_API_KEY"  "account.shodan.io → My Account (free tier available)"
-prompt_key "CENSYS_API_ID"   "search.censys.io → Account → API (for uncover)"
-prompt_key "CENSYS_API_SECRET" "search.censys.io → Account → API"
 
 echo
 

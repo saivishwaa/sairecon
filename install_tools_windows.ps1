@@ -29,7 +29,7 @@ Write-Host @"
 # ---------------------------------------------------------------------------
 # Step 1 -- Check prerequisites
 # ---------------------------------------------------------------------------
-Info "[1/5] Checking prerequisites"
+Info "[1/4] Checking prerequisites"
 
 # Python
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
@@ -61,7 +61,7 @@ Success "Git found"
 # ---------------------------------------------------------------------------
 # Step 2 -- Python venv + pip deps
 # ---------------------------------------------------------------------------
-Info "[2/5] Python virtualenv + dependencies"
+Info "[2/4] Python virtualenv + dependencies"
 if (-not (Test-Path $VENV_DIR)) {
     python -m venv $VENV_DIR
 }
@@ -86,7 +86,7 @@ Success "sairecon.bat wrapper created"
 # ---------------------------------------------------------------------------
 # Step 3 -- Go tools
 # ---------------------------------------------------------------------------
-Info "[3/5] Go-based recon tools"
+Info "[3/4] Go-based recon tools"
 $goTools = @(
     "github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
     "github.com/projectdiscovery/httpx/cmd/httpx@latest",
@@ -109,7 +109,11 @@ $goTools = @(
 )
 $failedGo = @()
 foreach ($tool in $goTools) {
-    $binary = ($tool -split "/")[-1] -replace "@.*", ""
+    $parts = ($tool -replace "@.*", "") -split "/"
+    $binary = $parts[-1]
+    if ($binary -match "^v\d+$") {
+        $binary = $parts[-2]
+    }
     if (Get-Command $binary -ErrorAction SilentlyContinue) {
         Success "$binary already installed"
     } else {
@@ -127,7 +131,7 @@ foreach ($tool in $goTools) {
 # ---------------------------------------------------------------------------
 # Step 4 -- Manual downloads (nmap, findomain)
 # ---------------------------------------------------------------------------
-Info "[4/5] Manual installs check"
+Info "[4/4] Manual installs check"
 if (-not (Get-Command nmap -ErrorAction SilentlyContinue)) {
     Warn "nmap not found -- download: https://nmap.org/download.html"
     Start-Process "https://nmap.org/download.html"
@@ -152,39 +156,7 @@ if (-not (Test-Path $GF_DIR) -or (Get-ChildItem $GF_DIR -Filter "*.json").Count 
     Success "gf patterns installed"
 }
 
-# ---------------------------------------------------------------------------
-# Step 5 -- API keys
-# ---------------------------------------------------------------------------
-Info "[5/5] API keys (optional)"
-Write-Host "These unlock extra recon sources. Press ENTER to skip any." -ForegroundColor Yellow
-Write-Host ""
-
-function Prompt-Key {
-    param($VarName, $Desc)
-    $existing = ""
-    if (Test-Path $ENV_FILE) {
-        $existing = (Get-Content $ENV_FILE | Where-Object { $_ -match "^${VarName}=" }) -replace "^${VarName}=", ""
-    }
-    if ($existing) {
-        Success "$VarName already in .env ($Desc)"
-        return
-    }
-    $val = Read-Host "  $VarName ($Desc)"
-    if ($val) {
-        Add-Content -Path $ENV_FILE -Value "${VarName}=${val}"
-        Success "Saved to .env"
-    } else {
-        Warn "Skipped"
-    }
-}
-
 if (-not (Test-Path $ENV_FILE)) { New-Item $ENV_FILE -ItemType File | Out-Null }
-Add-Content $ENV_FILE "# SaiRecon API keys"
-Prompt-Key "GITHUB_TOKEN"      "github.com -> Settings -> Developer -> Personal access tokens"
-Prompt-Key "PDCP_API_KEY"      "app.projectdiscovery.io -> API keys (free)"
-Prompt-Key "SHODAN_API_KEY"    "account.shodan.io -> My Account (free tier)"
-Prompt-Key "CENSYS_API_ID"     "search.censys.io -> Account -> API"
-Prompt-Key "CENSYS_API_SECRET" "search.censys.io -> Account -> API"
 
 Write-Host ""
 Write-Host "=== Installation complete ===" -ForegroundColor Green

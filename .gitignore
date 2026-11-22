@@ -20,6 +20,7 @@ htmlcov/
 .env
 sairecon_output/
 screenshots/
+*.sqlite3
 
 # Report files generated at runtime
 *.html
