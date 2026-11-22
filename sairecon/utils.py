@@ -123,13 +123,21 @@ class Target:
 
 
 def parse_target(raw: str) -> Target:
-    raw = raw.strip().lower()
-    is_wildcard = bool(_WILDCARD_RE.match(raw))
-    stripped = _WILDCARD_RE.sub("", raw)
+    clean = raw.strip().strip("'\"").lower()
+    # Strip URL protocol scheme if provided (e.g. https://, http://, wss://)
+    clean = re.sub(r"^[a-zA-Z0-9+.-]+://", "", clean)
+    # Strip trailing slashes, paths, query parameters, and fragments
+    clean = clean.split("/")[0].split("?")[0].split("#")[0].strip()
+    # Strip port if present (e.g. example.com:8080)
+    if ":" in clean:
+        clean = clean.split(":")[0]
+
+    is_wildcard = bool(_WILDCARD_RE.match(clean))
+    stripped = _WILDCARD_RE.sub("", clean)
 
     if not _HOST_RE.match(stripped):
         raise ValueError(
-            f"'{raw}' is not a valid domain or wildcard (e.g. *.example.com)"
+            f"'{raw}' is not a valid domain, URL, or wildcard (e.g. example.com, www.example.com/, or *.example.com)"
         )
 
     labels = stripped.split(".")
@@ -139,10 +147,10 @@ def parse_target(raw: str) -> Target:
         apex = ".".join(labels[-2:]) if len(labels) >= 2 else stripped
 
     if is_wildcard:
-        return Target(raw=raw, is_wildcard=True, apex_domain=apex, single_host=None)
+        return Target(raw=clean, is_wildcard=True, apex_domain=apex, single_host=None)
     if stripped == apex:
-        return Target(raw=raw, is_wildcard=True, apex_domain=apex, single_host=None)
-    return Target(raw=raw, is_wildcard=False, apex_domain=apex, single_host=stripped)
+        return Target(raw=clean, is_wildcard=True, apex_domain=apex, single_host=None)
+    return Target(raw=clean, is_wildcard=False, apex_domain=apex, single_host=stripped)
 
 
 def safe_filename(value: str) -> str:
