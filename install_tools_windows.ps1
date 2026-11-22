@@ -190,12 +190,12 @@ Write-Host ""
 Write-Host "=== Installation complete ===" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Run: sairecon doctor       -> verify tools" -ForegroundColor Cyan
-Write-Host "  Run: sairecon scan nasa.gov -> start scanning" -ForegroundColor Cyan
+Write-Host "  Run: sairecon scan example.com -> start scanning" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Reports saved to: .\sairecon_output\<target>_<timestamp>\" -ForegroundColor Cyan
-Write-Host "    nasa.gov.html"
-Write-Host "    nasa.gov.json"
-Write-Host "    nasa.gov.md"
+Write-Host "    example.com.html"
+Write-Host "    example.com.json"
+Write-Host "    example.com.md"
 if ($failedGo.Count -gt 0) {
     Warn "Some Go tools failed. Run 'sairecon doctor' to see which."
 }

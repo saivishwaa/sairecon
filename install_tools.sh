@@ -289,12 +289,12 @@ echo
 echo -e "${BOLD}${GREEN}=== Installation complete ===${RESET}"
 echo
 echo -e "  Run:  ${BOLD}sairecon doctor${RESET}       → verify all tools"
-echo -e "  Run:  ${BOLD}sairecon scan nasa.gov${RESET} → start scanning"
+echo -e "  Run:  ${BOLD}sairecon scan example.com${RESET} → start scanning"
 echo
 echo -e "  Reports saved to:  ${CYAN}./sairecon_output/<target>_<timestamp>/${RESET}"
-echo -e "    nasa.gov.html"
-echo -e "    nasa.gov.json"
-echo -e "    nasa.gov.md"
+echo -e "    example.com.html"
+echo -e "    example.com.json"
+echo -e "    example.com.md"
 echo
 if (( ${#FAILED_GO[@]} > 0 )); then
     warn "Some Go tools failed to install — run 'sairecon doctor' to see which."

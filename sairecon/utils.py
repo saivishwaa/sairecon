@@ -164,9 +164,9 @@ def make_scan_output_dir(base_dir: str, target_raw: str) -> str:
         <base_dir>/<target_safe>_<YYYYMMDD_HHMMSS>/
 
     Examples:
-        nasa.gov        → sairecon_output/nasa.gov_20261023_141502/
-        sub.nasa.gov    → sairecon_output/sub.nasa.gov_20261023_142001/
-        *.zomato.com    → sairecon_output/wildcard_zomato.com_20261023_143000/
+        example.com        → sairecon_output/example.com_20261023_141502/
+        sub.example.com    → sairecon_output/sub.example.com_20261023_142001/
+        *.example.com      → sairecon_output/wildcard_example.com_20261023_143000/
 
     Every scan gets its own folder — re-scanning the same target never
     overwrites a previous run.
