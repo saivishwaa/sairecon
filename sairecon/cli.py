@@ -248,22 +248,6 @@ def cmd_doctor(_args: argparse.Namespace) -> None:
                           f"[{CLR_DIM}]{SYM_ARROW}  pip install {pkg}[/{CLR_DIM}]")
 
     # API keys
-    console.print(phase_sep("API KEY STATUS"))
-    keys = {
-        "GITHUB_TOKEN":      "github-subdomains (more subdomain sources)",
-        "PDCP_API_KEY":      "asnmap (ASN/CIDR mapping)",
-        "SHODAN_API_KEY":    "uncover (passive asset search)",
-        "CENSYS_API_ID":     "uncover (Censys passive search)",
-        "CENSYS_API_SECRET": "uncover (Censys passive search)",
-    }
-    for var, desc in keys.items():
-        val = os.environ.get(var, "")
-        if val:
-            console.print(f"  [{CLR_OK}]{SYM_OK}[/{CLR_OK}] [{CLR_INFO}]{var}[/{CLR_INFO}] set  "
-                          f"[{CLR_DIM}]({desc})[/{CLR_DIM}]")
-        else:
-            console.print(f"  [{CLR_SKIP}]{SYM_SKIP}[/{CLR_SKIP}] [{CLR_DIM}]{var} not set  "
-                          f"({desc})[/{CLR_DIM}]")
     console.print()
 
 
@@ -293,7 +277,7 @@ def main() -> None:
     p_scan.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY,
                         help=f"Thread pool size (default: {DEFAULT_CONCURRENCY}).")
 
-    sub.add_parser("doctor", help="Check tool + API key status.")
+    sub.add_parser("doctor", help="Check external tool and dependency status.")
 
     args = parser.parse_args()
     if args.command == "scan":
