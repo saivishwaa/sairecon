@@ -24,10 +24,10 @@ class PassiveExposureModule(BaseModule):
                 pass
         if not records:
             self.add_finding(
-                title="Passive Exposure — No Results (likely no search-engine API keys configured)",
+                title="Passive Exposure — No Indexed Assets Found",
                 command=result.cmd,
                 result={"status": "no_data",
-                        "hint": "Add API keys to ~/.config/uncover/provider-config.yaml"},
+                        "note": "No public indexed assets found for this target."},
                 severity=None,
             )
             return self.findings

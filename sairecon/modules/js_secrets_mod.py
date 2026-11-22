@@ -39,8 +39,9 @@ class JSSecretsModule(BaseModule):
                 for label, pattern in SECRET_PATTERNS.items():
                     for match in re.findall(pattern, body):
                         secrets_found.append({
-                            "type": label, "js_url": js_url,
-                            "match_preview": (match if isinstance(match, str) else str(match))[:12] + "...(redacted)",
+                            "type": label,
+                            "js_url": js_url,
+                            "match_preview": "[CONFIDENTIAL_SECRET_MASKED]",
                         })
             except Exception:
                 pass
@@ -50,7 +51,7 @@ class JSSecretsModule(BaseModule):
             result={"js_files_scanned": len(js_urls),
                     "endpoints_found": sorted(endpoints_found)[:300],
                     "possible_secrets": secrets_found,
-                    "note": "Pattern-based matches may include false positives. Values truncated."},
+                    "note": "Pattern-based matches may include false positives. Secret values are fully masked."},
             severity="high" if secrets_found else None,
         )
         return self.findings

@@ -16,10 +16,10 @@ class ASNCloudReconModule(BaseModule):
         result = self.run(["asnmap", "-d", apex, "-silent", "-json"], timeout_sec=60)
         if result.returncode != 0 or not result.stdout.strip():
             self.add_finding(
-                title="ASN/CIDR Lookup — No Data (likely missing PDCP_API_KEY)",
+                title="ASN/CIDR Mapping — No Records Found",
                 command=result.cmd,
-                result={"status": "no_data", "hint":
-                        "asnmap needs a free ProjectDiscovery API key. Run 'asnmap -auth' once."},
+                result={"status": "no_data", "note":
+                        "No public ASN or CIDR blocks identified for this target."},
                 severity=None,
             )
             return self.findings

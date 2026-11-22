@@ -32,10 +32,9 @@ SaiRecon aggregates the best open-source recon tools (subfinder, httpx, naabu, k
 4. [23 Modules](#23-modules)
 5. [Architecture](#architecture)
 6. [Output & reports](#output--reports)
-7. [API keys](#api-keys)
-8. [Troubleshooting](#troubleshooting)
-9. [Contributing](#contributing)
-10. [Legal & ethical use](#legal--ethical-use)
+7. [Troubleshooting](#troubleshooting)
+8. [Contributing](#contributing)
+9. [Legal & ethical use](#legal--ethical-use)
 
 ---
 
@@ -290,21 +289,6 @@ Wildcard scans:
   ]
 }
 ```
-
----
-
-## API keys
-
-Set in `.env` (the installer prompts for them), or export as environment variables:
-
-| Variable | Where to get | Unlocks |
-|---|---|---|
-| `GITHUB_TOKEN` | github.com → Settings → Developer → Personal access tokens → Tokens (classic) | `github-subdomains` (many more subdomains) |
-| `PDCP_API_KEY` | app.projectdiscovery.io → API keys (free tier) | `asnmap` (ASN/CIDR mapping) |
-| `SHODAN_API_KEY` | account.shodan.io → My Account | `uncover` Shodan passive search |
-| `CENSYS_API_ID` + `CENSYS_API_SECRET` | search.censys.io → Account → API | `uncover` Censys passive search |
-
-**Without any API keys**, SaiRecon still runs 18/21 modules using public APIs and Python-native fallbacks.
 
 ---
 

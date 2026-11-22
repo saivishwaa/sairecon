@@ -82,7 +82,22 @@ class BaseModule:
         timeout_sec: int = 120,
         input_text: Optional[str] = None,
     ) -> CommandResult:
-        self.log(f"$ {' '.join(cmd_args)}")
+        # Sanitize sensitive arguments (API keys/tokens) before logging
+        safe_args = []
+        skip_next = False
+        for arg in cmd_args:
+            if skip_next:
+                safe_args.append("[REDACTED]")
+                skip_next = False
+            elif arg in ("-t", "--token", "-k", "--key", "--api-key", "-api-key"):
+                safe_args.append(arg)
+                skip_next = True
+            elif any(k in arg.lower() for k in ("token=", "key=", "apikey=", "secret=")):
+                prefix, _, _ = arg.partition("=")
+                safe_args.append(f"{prefix}=[REDACTED]")
+            else:
+                safe_args.append(arg)
+        self.log(f"$ {' '.join(safe_args)}")
         result = run_command(cmd_args, timeout_sec=timeout_sec, input_text=input_text)
         if result.timed_out:
             self.log(f"... timed out after {timeout_sec}s")

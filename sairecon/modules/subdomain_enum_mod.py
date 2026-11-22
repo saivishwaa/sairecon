@@ -59,7 +59,7 @@ class SubdomainEnumModule(BaseModule):
         else:
             sources_skipped.append("findomain")
 
-        # 5. github-subdomains (needs GITHUB_TOKEN)
+        # 5. github-subdomains
         if tool_exists("github-subdomains"):
             token = os.environ.get("GITHUB_TOKEN", "")
             if token:
@@ -69,7 +69,7 @@ class SubdomainEnumModule(BaseModule):
                 all_candidates += found
                 sources_used.append({"tool": "github-subdomains", "count": len(found)})
             else:
-                sources_skipped.append("github-subdomains (no GITHUB_TOKEN env var set)")
+                sources_skipped.append("github-subdomains")
         else:
             sources_skipped.append("github-subdomains (not installed)")
 
