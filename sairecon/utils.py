@@ -82,8 +82,35 @@ _HOST_RE = re.compile(
     r"(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,63}$"
 )
 _MULTI_TLDS = {
-    "co.in", "co.uk", "com.au", "co.jp", "com.br",
-    "co.za", "net.in", "org.in", "gov.in",
+    # India (.in)
+    "ac.in", "edu.in", "res.in", "gov.in", "mil.in", "net.in", "org.in", "co.in",
+    "gen.in", "firm.in", "ind.in",
+    # United Kingdom (.uk)
+    "co.uk", "ac.uk", "gov.uk", "org.uk", "net.uk", "me.uk", "ltd.uk", "plc.uk", "sch.uk",
+    # Australia (.au)
+    "com.au", "net.au", "org.au", "edu.au", "gov.au", "asn.au", "id.au",
+    # New Zealand (.nz)
+    "co.nz", "net.nz", "org.nz", "ac.nz", "govt.nz", "edu.nz",
+    # Japan (.jp)
+    "co.jp", "ne.jp", "or.jp", "ac.jp", "go.jp", "ed.jp", "ad.jp", "gr.jp", "lg.jp",
+    # Brazil (.br)
+    "com.br", "net.br", "org.br", "gov.br", "edu.br", "mil.br",
+    # South Africa (.za)
+    "co.za", "net.za", "org.za", "ac.za", "gov.za", "edu.za", "web.za",
+    # Singapore (.sg)
+    "com.sg", "edu.sg", "gov.sg", "net.sg", "org.sg", "per.sg",
+    # Malaysia (.my)
+    "com.my", "edu.my", "gov.my", "net.my", "org.my", "mil.my",
+    # Indonesia (.id)
+    "co.id", "ac.id", "go.id", "or.id", "net.id", "web.id", "sch.id",
+    # South Korea (.kr)
+    "co.kr", "ne.kr", "or.kr", "re.kr", "pe.kr", "go.kr", "ac.kr",
+    # Philippines (.ph)
+    "com.ph", "net.ph", "org.ph", "edu.ph", "gov.ph",
+    # Pakistan (.pk)
+    "com.pk", "net.pk", "org.pk", "edu.pk", "gov.pk",
+    # Canada (.ca)
+    "gc.ca",
 }
 
 
