@@ -173,10 +173,24 @@ if (-not (Get-Command nmap -ErrorAction SilentlyContinue)) {
 } else { Success "nmap found" }
 
 if (-not (Get-Command findomain -ErrorAction SilentlyContinue)) {
-    Warn "findomain not found -- download findomain-windows.exe from:"
-    Warn "  https://github.com/Findomain/Findomain/releases"
-    Warn "  Rename to findomain.exe and add folder to PATH"
-    Start-Process "https://github.com/Findomain/Findomain/releases"
+    Info "Installing findomain..."
+    try {
+        $binDir = "$env:USERPROFILE\go\bin"
+        if (-not (Test-Path $binDir)) {
+            $binDir = "$env:USERPROFILE\AppData\Local\Microsoft\WindowsApps"
+        }
+        $zipPath = Join-Path ([System.IO.Path]::GetTempPath()) "findomain-windows.zip"
+        $extractDir = Join-Path ([System.IO.Path]::GetTempPath()) "findomain_extract"
+        Invoke-RestMethod -Uri "https://github.com/Findomain/Findomain/releases/latest/download/findomain-windows.zip" -OutFile $zipPath
+        Expand-Archive -Path $zipPath -DestinationPath $extractDir -Force
+        Copy-Item -Path (Join-Path $extractDir "findomain.exe") -Destination (Join-Path $binDir "findomain.exe") -Force
+        Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+        Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
+        Success "findomain installed to $binDir\findomain.exe"
+    } catch {
+        Warn "findomain automatic install skipped: $_"
+        Warn "Manual download: https://github.com/Findomain/Findomain/releases"
+    }
 } else { Success "findomain found" }
 
 # gf patterns
