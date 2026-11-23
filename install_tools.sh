@@ -54,9 +54,41 @@ info "Detected OS: $OS ($ARCH)"
 echo
 
 # ---------------------------------------------------------------------------
-# Step 1 — System packages
+# Step 1 — API keys setup (optional)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[1/5] System packages${RESET}"
+echo -e "${BOLD}[1/6] API keys setup (optional)${RESET}"
+echo "Configure keys for extended recon sources. Press ENTER to skip any."
+echo
+
+touch "$ENV_FILE"
+
+prompt_key() {
+    local var="$1" desc="$2" existing=""
+    existing=$(grep "^${var}=." "$ENV_FILE" 2>/dev/null || true)
+    if [[ -n "$existing" ]]; then
+        echo -e "  ${GREEN}[✓]${RESET} $var already configured"
+        return
+    fi
+    read -r -p "  $var ($desc): " val
+    if [[ -n "$val" ]]; then
+        echo "${var}=${val}" >> "$ENV_FILE"
+        echo -e "  ${GREEN}[✓]${RESET} $var saved to .env"
+    else
+        echo -e "  ${YELLOW}[–]${RESET} $var skipped"
+    fi
+}
+
+prompt_key "GITHUB_TOKEN"      "github.com → Settings → Developer settings → Personal access tokens"
+prompt_key "PDCP_API_KEY"      "app.projectdiscovery.io → API keys  (free tier, for asnmap)"
+prompt_key "SHODAN_API_KEY"    "account.shodan.io → My Account (free tier available)"
+prompt_key "CENSYS_API_ID"     "search.censys.io → Account → API (for uncover)"
+prompt_key "CENSYS_API_SECRET" "search.censys.io → Account → API"
+echo
+
+# ---------------------------------------------------------------------------
+# Step 2 — System packages
+# ---------------------------------------------------------------------------
+echo -e "${BOLD}[2/6] System packages${RESET}"
 if [[ "$OS" == "linux" ]]; then
     sudo apt-get update -y -q
     sudo apt-get install -y -q \
@@ -81,7 +113,7 @@ echo
 # ---------------------------------------------------------------------------
 # Step 2 — Go (official tarball, not apt golang-go which gives outdated 1.18)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[2/5] Go ${GOVERSION}${RESET}"
+echo -e "${BOLD}[3/6] Go ${GOVERSION}${RESET}"
 install_go() {
     if [[ "$OS" == "linux" ]]; then
         URL=$( [[ "$ARCH" == "aarch64" ]] && echo "$GO_LINUX_ARM64" || echo "$GO_LINUX_AMD64" )
@@ -123,7 +155,7 @@ echo
 # ---------------------------------------------------------------------------
 # Step 3 — Go tools (ProjectDiscovery + tomnomnom)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[3/5] Go-based recon tools${RESET}"
+echo -e "${BOLD}[4/6] Go-based recon tools${RESET}"
 GO_TOOLS=(
     "github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
     "github.com/projectdiscovery/httpx/cmd/httpx@latest"
@@ -169,9 +201,9 @@ fi
 echo
 
 # ---------------------------------------------------------------------------
-# Step 4 — findomain (prebuilt binary, no Go compile)
+# Step 5 — findomain (prebuilt binary, no Go compile)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[4/5] findomain${RESET}"
+echo -e "${BOLD}[5/6] findomain${RESET}"
 if command -v findomain &>/dev/null; then
     success "findomain already installed"
 else
@@ -196,9 +228,9 @@ fi
 echo
 
 # ---------------------------------------------------------------------------
-# Step 5 — Python dependencies (virtualenv)
+# Step 6 — Python dependencies (virtualenv)
 # ---------------------------------------------------------------------------
-echo -e "${BOLD}[5/5] Python dependencies (virtualenv)${RESET}"
+echo -e "${BOLD}[6/6] Python dependencies (virtualenv)${RESET}"
 if [[ ! -d "$VENV_DIR" ]]; then
     info "Creating virtualenv at $VENV_DIR ..."
     python3 -m venv "$VENV_DIR"
