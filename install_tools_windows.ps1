@@ -27,44 +27,9 @@ Write-Host @"
 "@ -ForegroundColor Cyan
 
 # ---------------------------------------------------------------------------
-# Step 1 -- API keys (optional)
+# Step 1 -- Check prerequisites
 # ---------------------------------------------------------------------------
-Info "[1/5] API keys setup (optional)"
-Write-Host "Configure keys for extended recon sources. Press ENTER to skip any." -ForegroundColor Yellow
-Write-Host ""
-
-function Prompt-Key {
-    param($VarName, $Desc)
-    $hasKey = $false
-    if (Test-Path $ENV_FILE) {
-        $line = Get-Content $ENV_FILE | Where-Object { $_ -match "^${VarName}=.+" }
-        if ($line) { $hasKey = $true }
-    }
-    if ($hasKey) {
-        Success "$VarName already configured"
-        return
-    }
-    $val = Read-Host "  $VarName ($Desc)"
-    if ($val) {
-        Add-Content -Path $ENV_FILE -Value "${VarName}=${val}"
-        Success "Saved to .env"
-    } else {
-        Info "  Skipped"
-    }
-}
-
-if (-not (Test-Path $ENV_FILE)) { New-Item $ENV_FILE -ItemType File | Out-Null }
-Prompt-Key "GITHUB_TOKEN"      "github.com -> Settings -> Developer -> Personal access tokens"
-Prompt-Key "PDCP_API_KEY"      "app.projectdiscovery.io -> API keys (free)"
-Prompt-Key "SHODAN_API_KEY"    "account.shodan.io -> My Account (free tier)"
-Prompt-Key "CENSYS_API_ID"     "search.censys.io -> Account -> API"
-Prompt-Key "CENSYS_API_SECRET" "search.censys.io -> Account -> API"
-Write-Host ""
-
-# ---------------------------------------------------------------------------
-# Step 2 -- Check prerequisites
-# ---------------------------------------------------------------------------
-Info "[2/5] Checking prerequisites"
+Info "[1/5] Checking prerequisites"
 
 # Python
 if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
@@ -94,9 +59,9 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 Success "Git found"
 
 # ---------------------------------------------------------------------------
-# Step 3 -- Python venv + pip deps
+# Step 2 -- Python venv + pip deps
 # ---------------------------------------------------------------------------
-Info "[3/5] Python virtualenv + dependencies"
+Info "[2/5] Python virtualenv + dependencies"
 if (-not (Test-Path $VENV_DIR)) {
     python -m venv $VENV_DIR
 }
@@ -119,9 +84,9 @@ Set-Content -Path $BAT_PATH -Value $batContent -Encoding ASCII
 Success "sairecon.bat wrapper created"
 
 # ---------------------------------------------------------------------------
-# Step 4 -- Go tools
+# Step 3 -- Go tools
 # ---------------------------------------------------------------------------
-Info "[4/5] Go-based recon tools"
+Info "[3/5] Go-based recon tools"
 $goTools = @(
     "github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
     "github.com/projectdiscovery/httpx/cmd/httpx@latest",
@@ -164,9 +129,9 @@ foreach ($tool in $goTools) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 5 -- Manual downloads (nmap, findomain)
+# Step 4 -- Manual downloads (nmap, findomain)
 # ---------------------------------------------------------------------------
-Info "[5/5] Manual installs check"
+Info "[4/5] Manual installs check"
 if (-not (Get-Command nmap -ErrorAction SilentlyContinue)) {
     Warn "nmap not found -- download: https://nmap.org/download.html"
     Start-Process "https://nmap.org/download.html"
@@ -204,6 +169,41 @@ if (-not (Test-Path $GF_DIR) -or (Get-ChildItem $GF_DIR -Filter "*.json").Count 
     Remove-Item $TMP -Recurse -Force
     Success "gf patterns installed"
 }
+
+# ---------------------------------------------------------------------------
+# Step 5 -- API keys (optional)
+# ---------------------------------------------------------------------------
+Info "[5/5] API keys setup (optional)"
+Write-Host "Configure keys for extended recon sources. Press ENTER to skip any." -ForegroundColor Yellow
+Write-Host ""
+
+function Prompt-Key {
+    param($VarName, $Desc)
+    $hasKey = $false
+    if (Test-Path $ENV_FILE) {
+        $line = Get-Content $ENV_FILE | Where-Object { $_ -match "^${VarName}=.+" }
+        if ($line) { $hasKey = $true }
+    }
+    if ($hasKey) {
+        Success "$VarName already configured"
+        return
+    }
+    $val = Read-Host "  $VarName ($Desc)"
+    if ($val) {
+        Add-Content -Path $ENV_FILE -Value "${VarName}=${val}"
+        Success "Saved to .env"
+    } else {
+        Info "  Skipped"
+    }
+}
+
+if (-not (Test-Path $ENV_FILE)) { New-Item $ENV_FILE -ItemType File | Out-Null }
+Prompt-Key "GITHUB_TOKEN"      "github.com -> Settings -> Developer -> Personal access tokens"
+Prompt-Key "PDCP_API_KEY"      "app.projectdiscovery.io -> API keys (free)"
+Prompt-Key "SHODAN_API_KEY"    "account.shodan.io -> My Account (free tier)"
+Prompt-Key "CENSYS_API_ID"     "search.censys.io -> Account -> API"
+Prompt-Key "CENSYS_API_SECRET" "search.censys.io -> Account -> API"
+Write-Host ""
 
 if (-not (Test-Path $ENV_FILE)) { New-Item $ENV_FILE -ItemType File | Out-Null }
 

@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "SaiRecon — a single CLI that aggregates best-in-class open-source recon tools into one authorised reconnaissance pipeline."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Sai Vishwaa", email = "saivishwaaincloud@gmail.com" }]
 keywords = ["recon", "reconnaissance", "bug-bounty", "osint", "subdomain-enumeration", "cli"]
 classifiers = [
