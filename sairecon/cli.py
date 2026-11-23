@@ -247,7 +247,6 @@ def cmd_doctor(_args: argparse.Namespace) -> None:
             console.print(f"  [{CLR_FAIL}]{SYM_FAIL}[/{CLR_FAIL}] {pkg}  "
                           f"[{CLR_DIM}]{SYM_ARROW}  pip install {pkg}[/{CLR_DIM}]")
 
-    # API keys
     console.print()
 
 

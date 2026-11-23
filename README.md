@@ -70,7 +70,7 @@ chmod +x install_tools.sh
 ./install_tools.sh
 ```
 
-The script installs: system packages → Go 1.22 → all 18 Go tools → Python venv → pip deps → gf patterns → API key prompts → `/usr/local/bin/sairecon` wrapper.
+The script installs: system packages → Go 1.22 → all 18 Go tools → Python venv → pip deps → gf patterns → `/usr/local/bin/sairecon` wrapper.
 
 ---
 
@@ -110,7 +110,7 @@ sairecon scan example.com   # works with Python-native fallbacks
 
 ```bash
 # After any install method above:
-sairecon doctor                # check tools + API keys
+sairecon doctor                # check tools + environment
 
 sairecon scan example.com      # single domain (most common)
 sairecon scan "*.example.com"  # wildcard — full scope
@@ -150,7 +150,7 @@ OPTIONS
   --concurrency   Thread pool size  (default: 8)
   -h, --help      Show help
 
-sairecon doctor   Check all external tools and API keys
+sairecon doctor   Check all external tools and environment status
 ```
 
 ### All 23 module keys (for --modules / --skip-modules)
@@ -176,7 +176,7 @@ breach_check        nvd_correlate
 | 2 | `dns_recon` | Full DNS record enumeration | `dig` | dnspython ✓ |
 | 3 | `subdomain_enum` | Multi-source subdomain discovery + DNS resolution | subfinder, assetfinder, findomain, github-subdomains, dnsx | archive only |
 | 4 | `asn_cloud_recon` | ASN → CIDR mapping, cloud provider detection | asnmap, mapcidr | ipwhois ✓ |
-| 5 | `passive_exposure` | Internet-wide asset discovery | uncover (Shodan/Censys) | needs API keys |
+| 5 | `passive_exposure` | Internet-wide asset discovery | uncover (Shodan/Censys) | public engines |
 | 6 | `live_recon` | HTTP/S probe — status, title, tech, redirects | httpx | requests ✓ |
 | 7 | `subdomain_takeover` | Unclaimed CNAME detection | Python logic | — |
 | 8 | `port_scan` | Top-1000 ports + service banners | naabu + nmap | nmap only |
