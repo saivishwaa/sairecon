@@ -44,6 +44,13 @@ RUN go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest && 
 RUN git clone --depth 1 https://github.com/1ndianl33t/Gf-Patterns /tmp/gf && \
     mkdir -p /root/.gf && cp /tmp/gf/*.json /root/.gf/ && rm -rf /tmp/gf
 
+# findomain
+RUN curl -sL "https://github.com/Findomain/Findomain/releases/latest/download/findomain-linux.zip" -o /tmp/findomain.zip && \
+    unzip -q /tmp/findomain.zip -d /tmp && \
+    chmod +x /tmp/findomain && \
+    mv /tmp/findomain /usr/local/bin/findomain && \
+    rm /tmp/findomain.zip
+
 WORKDIR /app
 COPY . /app
 

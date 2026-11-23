@@ -208,22 +208,46 @@ if command -v findomain &>/dev/null; then
     success "findomain already installed"
 else
     TMP=$(mktemp -d)
+    INSTALL_DIR="/usr/local/bin"
+    if [[ ! -w "$INSTALL_DIR" ]] && ! command -v sudo &>/dev/null; then
+        INSTALL_DIR="$HOME/go/bin"
+        mkdir -p "$INSTALL_DIR"
+    fi
     if [[ "$OS" == "linux" ]]; then
-        URL="https://github.com/Findomain/Findomain/releases/latest/download/findomain-linux.zip"
-        curl -sL "$URL" -o "$TMP/findomain.zip"
-        unzip -o "$TMP/findomain.zip" -d "$TMP" >/dev/null
-        chmod +x "$TMP/findomain"
-        sudo mv "$TMP/findomain" /usr/local/bin/findomain
+        if [[ "$ARCH" == "aarch64" ]]; then
+            URL="https://github.com/Findomain/Findomain/releases/latest/download/findomain-aarch64.zip"
+        else
+            URL="https://github.com/Findomain/Findomain/releases/latest/download/findomain-linux.zip"
+        fi
+        info "Downloading findomain for Linux ($ARCH)..."
+        if curl -sL "$URL" -o "$TMP/findomain.zip" && unzip -q -o "$TMP/findomain.zip" -d "$TMP" 2>/dev/null; then
+            chmod +x "$TMP/findomain" 2>/dev/null || true
+            if [[ -w "$INSTALL_DIR" ]]; then
+                mv "$TMP/findomain" "$INSTALL_DIR/findomain"
+            else
+                sudo mv "$TMP/findomain" "$INSTALL_DIR/findomain" 2>/dev/null || mv "$TMP/findomain" "$HOME/go/bin/findomain" 2>/dev/null || true
+            fi
+            success "findomain installed to $INSTALL_DIR/findomain"
+        else
+            warn "Could not download findomain automatically. Skipping."
+        fi
     elif [[ "$OS" == "macos" ]]; then
         ARCH_STR=$( [[ "$ARCH" == "arm64" ]] && echo "osx-arm64" || echo "osx-x86_64" )
         URL="https://github.com/Findomain/Findomain/releases/latest/download/findomain-${ARCH_STR}.zip"
-        curl -sL "$URL" -o "$TMP/findomain.zip"
-        unzip -o "$TMP/findomain.zip" -d "$TMP" >/dev/null
-        chmod +x "$TMP/findomain"
-        sudo mv "$TMP/findomain" /usr/local/bin/findomain
+        info "Downloading findomain for macOS ($ARCH)..."
+        if curl -sL "$URL" -o "$TMP/findomain.zip" && unzip -q -o "$TMP/findomain.zip" -d "$TMP" 2>/dev/null; then
+            chmod +x "$TMP/findomain" 2>/dev/null || true
+            if [[ -w "$INSTALL_DIR" ]]; then
+                mv "$TMP/findomain" "$INSTALL_DIR/findomain"
+            else
+                sudo mv "$TMP/findomain" "$INSTALL_DIR/findomain" 2>/dev/null || mv "$TMP/findomain" "$HOME/go/bin/findomain" 2>/dev/null || true
+            fi
+            success "findomain installed to $INSTALL_DIR/findomain"
+        else
+            warn "Could not download findomain automatically. Skipping."
+        fi
     fi
     rm -rf "$TMP"
-    success "findomain installed"
 fi
 echo
 
